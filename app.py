@@ -5,8 +5,7 @@ import json
 import os
 import datetime
 import re
-from bson import Binary, Code 
-from bson.json_util import dumps
+
 
 
 
@@ -40,8 +39,19 @@ def upload_csv():
     coll = mongo.db.create_collection(logged_in_user)
 
     data = request.get_json()
-    print(data)
-    result = coll.insert_many(data)
+    print(data['csvfile'])
+    print(data['filename'])
+    result = coll.insert_many(data['csvfile'])
+
+    # Dictionary for storing users chosen file name and the name of the collection (i.e. the
+    # name of file as it is stored in MongoDB)
+    file_name_reference = {data['filename']: logged_in_user}
+
+    file_reference = mongo.db.users.update_one({
+        'username': 'tom'
+        }, {
+        '$push': {'files': file_name_reference}
+        })
 
 
     # print([r._id for r in result.inserted_ids])
@@ -49,11 +59,20 @@ def upload_csv():
     
     if (result.inserted_ids != None):
         return jsonify(data=resultStr, status={"code": 200, "message": "Success"})
+    
 
 @app.route("/prepdata", methods=["GET"])
 def prepdata():
     
     result = mongo.db.list_collection_names()
+
+    # Grab file name references from users collection
+    file_name_references = mongo.db.users.find({
+        'username': 'tom'
+        }, {'files': 1})
+
+    for element in file_name_references:
+        print(element['files'], "HERE ARE THE FILE NAME REFERENCES")
     
 
     # Retrieve list of collections belonging to user
@@ -72,6 +91,8 @@ def prepdata():
         for document in file:
             built_file.append(document)
         user_files.append(built_file)
+
+    print(user_files)
 
     # Convert ObjectIds to strings
     jsonifiable_user_files = []
