@@ -79,15 +79,16 @@ def prepdata():
 
     flat_refs_list = [item for sublist in file_name_references_list for item in sublist]
     
-    print(file_name_references_list, "LIST OF FILE NAME REFERENCES")
+    
     # Retrieve list of collections belonging to user
     array_of_user_collections = []
     for collection in result:
         if "tom" in collection:
             array_of_user_collections.append(collection)
     
-    # Construct an individual file by creating a list with all documents from a collection, and 
-    # then create a list of such files.
+    # Construct an individual file by creating a list with all documents from a collection. 
+    # Then create a list of such files, making each individual file the value of a key - in a dictionary -
+    # whose name is linked to the collection name. 
     user_files = []
     for collection in array_of_user_collections:
 
@@ -98,6 +99,9 @@ def prepdata():
             document['_id'] = str(document['_id'])
             built_file.append(document)
 
+        for file in built_file:
+            if "_id" in file:
+                del file["_id"]
 
         for file_name_ref in flat_refs_list:
             for key, value in file_name_ref.items():
