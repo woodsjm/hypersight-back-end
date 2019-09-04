@@ -71,43 +71,42 @@ def prepdata():
         'username': 'tom'
         }, {'files': 1})
 
-    for element in file_name_references:
-        print(element['files'], "HERE ARE THE FILE NAME REFERENCES")
-    
 
+    file_name_references_list = []
+    for element in file_name_references:
+        file_name_references_list.append(element['files'])
+
+
+    flat_refs_list = [item for sublist in file_name_references_list for item in sublist]
+    
+    print(file_name_references_list, "LIST OF FILE NAME REFERENCES")
     # Retrieve list of collections belonging to user
     array_of_user_collections = []
     for collection in result:
         if "tom" in collection:
             array_of_user_collections.append(collection)
-    print(array_of_user_collections)
-
+    
     # Construct an individual file by creating a list with all documents from a collection, and 
     # then create a list of such files.
     user_files = []
     for collection in array_of_user_collections:
+
         file = mongo.db[collection].find()
+
         built_file = []
         for document in file:
-            built_file.append(document)
-        user_files.append(built_file)
-
-    print(user_files)
-
-    # Convert ObjectIds to strings
-    jsonifiable_user_files = []
-    for file in user_files:
-        jsonifiable_built_file = []
-        for document in file:
             document['_id'] = str(document['_id'])
-            jsonifiable_built_file.append(document)
-        jsonifiable_user_files.append(jsonifiable_built_file)
+            built_file.append(document)
 
-    return jsonify(data=jsonifiable_user_files, status={"code": 200, "message": "Success"})
-    # desired_collection = mongo.db[coll].find()
-    # for document in desired_collection:
-    #     print(document)
-    #return jsonify(data=user_files, status={"code": 200, "message": "Success"})
+
+        for file_name_ref in flat_refs_list:
+            for key, value in file_name_ref.items():
+                if value == collection:
+                    user_file = {key: built_file}
+                    user_files.append(user_file)
+    
+    
+    return jsonify(data=user_files, status={"code": 200, "message": "Success"})
 
 
 
