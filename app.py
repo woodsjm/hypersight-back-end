@@ -22,6 +22,8 @@ mongo = PyMongo(app)
 
 CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
 
+
+# ADD FILE
 @app.route("/upload", methods=["POST"])
 def upload_csv():
     print("*******************")
@@ -61,6 +63,7 @@ def upload_csv():
         return jsonify(data=resultStr, status={"code": 200, "message": "Success"})
     
 
+# LIST ALL FILES
 @app.route("/prepdata", methods=["GET"])
 def prepdata():
     
@@ -71,14 +74,11 @@ def prepdata():
         'username': 'tom'
         }, {'files': 1})
 
-
     file_name_references_list = []
     for element in file_name_references:
         file_name_references_list.append(element['files'])
 
-
     flat_refs_list = [item for sublist in file_name_references_list for item in sublist]
-    
     
     # Retrieve list of collections belonging to user
     array_of_user_collections = []
@@ -113,6 +113,7 @@ def prepdata():
     return jsonify(data=user_files, status={"code": 200, "message": "Success"})
 
 
+# DELETE FILE
 @app.route('/delete/<filename>', methods=["Delete"])
 def delete_file(filename):
 
@@ -140,6 +141,44 @@ def delete_file(filename):
             mongo.db.drop_collection(collection_to_delete)
 
     return jsonify(data='resources successfully deleted', status={"code": 200, "message": "Resource deleted"})
+
+
+# UPDATE FILE NAME
+@app.route('/edit/<filename>', methods=["PUT"])
+def edit_file(filename):
+
+    data = request.get_json()
+
+    new_filename = data['new_filename']
+    
+    file_name_references = mongo.db.users.find({
+        'username': 'tom'
+        }, {'files': 1})
+
+    # Grab file name references from users collection
+    file_name_references_list = []
+    for element in file_name_references:
+        file_name_references_list.append(element['files'])
+
+    for file_ref in file_name_references_list[0]:
+        file_ref_key = [*file_ref]
+        if filename == file_ref_key[0]:
+
+            file_reference_value = file_ref[file_ref_key[0]]
+            
+            delete_file_ref = mongo.db.users.update_one({
+                    'username': 'tom'
+                    }, {
+                    '$pull': {'files': {file_ref_key[0]: file_reference_value}}
+                    })
+
+            add_file_ref = mongo.db.users.update_one({
+                    'username': 'tom'
+                    }, {
+                    '$push': {'files': {new_filename: file_reference_value}}
+                    }) 
+        
+    return jsonify(data='resource successfully updated', status={"code": 200, "message": "Resource updated"})
 
 
 # @app.route("/<username>")
