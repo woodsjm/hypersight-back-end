@@ -113,13 +113,13 @@ def prepdata():
     return jsonify(data=user_files, status={"code": 200, "message": "Success"})
 
 
-@app.route('/delete', methods=["Delete"])
-def delete_file():
+@app.route('/delete/<filename>', methods=["Delete"])
+def delete_file(filename):
 
     # Grab list of all collections
     all_files = mongo.db.list_collection_names()
 
-    file_to_delete = "test_data"
+    file_to_delete = filename
 
     # Grab file name references from users collection
     file_name_references = mongo.db.users.find({
@@ -139,12 +139,7 @@ def delete_file():
             collection_to_delete = file_name[file_to_delete]
             mongo.db.drop_collection(collection_to_delete)
 
-
-
-
-    print(file_name_references_list, "HERE IS THE LIST OF FILE NAME REFERENCES")
-
-    return "working"
+    return jsonify(data='resources successfully deleted', status={"code": 200, "message": "Resource deleted"})
 
 
 # @app.route("/<username>")
