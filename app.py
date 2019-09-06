@@ -113,6 +113,39 @@ def prepdata():
     return jsonify(data=user_files, status={"code": 200, "message": "Success"})
 
 
+@app.route('/delete', methods=["Delete"])
+def delete_file():
+
+    # Grab list of all collections
+    all_files = mongo.db.list_collection_names()
+
+    file_to_delete = "test_data"
+
+    # Grab file name references from users collection
+    file_name_references = mongo.db.users.find({
+        'username': 'tom'
+        }, {'files': 1})
+
+    # Convert file name references into a list
+    file_name_references_list = []
+    for element in file_name_references:
+        file_name_references_list.append(element['files'])
+
+    # Find the name of the collection matching the given file name
+    for file_name in file_name_references_list[0]:
+        file_reference = [*file_name]
+        if file_to_delete == file_reference[0]:
+            # The collection that will be deleted
+            collection_to_delete = file_name[file_to_delete]
+            mongo.db.drop_collection(collection_to_delete)
+
+
+
+
+    print(file_name_references_list, "HERE IS THE LIST OF FILE NAME REFERENCES")
+
+    return "working"
+
 
 # @app.route("/<username>")
 # def user_profile(username):
