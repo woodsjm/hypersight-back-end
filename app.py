@@ -149,7 +149,7 @@ def edit_file(filename):
 
     data = request.get_json()
 
-    new_filename = data['new_filename']
+    new_filename = data
     
     file_name_references = mongo.db.users.find({
         'username': 'tom'
@@ -165,7 +165,7 @@ def edit_file(filename):
         if filename == file_ref_key[0]:
 
             file_reference_value = file_ref[file_ref_key[0]]
-            
+
             delete_file_ref = mongo.db.users.update_one({
                     'username': 'tom'
                     }, {
