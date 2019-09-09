@@ -1,8 +1,9 @@
-from flask import Flask, g, request, jsonify
+from flask import Flask, g, request, session, jsonify
 from flask_pymongo import PyMongo 
 from flask_cors import CORS
 from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required 
+import bcrypt
 import json
 import os
 import datetime
@@ -20,7 +21,7 @@ app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/employees"
 mongo = PyMongo(app)
 
-
+app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
 
 CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
 
@@ -38,9 +39,11 @@ def login():
 
         print(hash_entered_pw, "HASH OF THE ENTERED PW")
 
-        # if check_password_hash(data['password'].encode('utf-8'), login_user['password'].encode('utf-8')) == login_user['password'].encode('utf-8'):
-        #     session['username'] = data['username']
-        #     return jsonify(data={}, status={"code": 200, "message": "Successfully logged in"})
+        
+
+        if bcrypt.hashpw(data['password'].encode('utf-8'), login_user['password'].encode('utf-8')) == login_user['password'].encode('utf-8'):
+            session['username'] = data['username']
+            return jsonify(data={}, status={"code": 200, "message": "Successfully logged in"})
     
         return jsonify(data={}, status={"code": 401, "message": "Invalid Username/Password"})
 
