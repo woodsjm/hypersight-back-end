@@ -3,6 +3,7 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS
 from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required 
+from pymongo import Connection
 import bcrypt
 import json
 import os
@@ -14,13 +15,16 @@ DEBUG = True
 PORT = 8000
 
 
+# ----------------DB SETUP----------------
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
 mongo = PyMongo(app)
 
+DATABASE = pymongo.Connection(os.environ['MONGODB_URL'])
+
 app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
 
-CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
+CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'],  supports_credentials=True)
 
 
 
@@ -261,7 +265,9 @@ def edit_file(filename):
 def index(): 
     return 'SERVER WORKING' 
 
+if 'ON_HEROKU' in os.environ:
 
+    print('hitting ')
 
 if __name__ == '__main__':
     
