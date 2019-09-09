@@ -1,6 +1,8 @@
 from flask import Flask, g, request, jsonify
 from flask_pymongo import PyMongo 
 from flask_cors import CORS
+from flask_bcrypt import generate_password_hash, check_password_hash
+from flask_login import login_user, logout_user, current_user, login_required 
 import json
 import os
 import datetime
@@ -21,6 +23,58 @@ mongo = PyMongo(app)
 #app.register_blueprint(api)
 
 CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
+
+# REGISTER NEW USER
+@app.route("/register", methods=["POST"])
+def register():
+
+    data = request.get_json()
+
+
+    user_exists = mongo.db.users.find({'username': data['username']})
+
+    user_response = []
+    for item in user_exists:
+        user_response.append(item)
+
+    if user_response:
+
+        return jsonify(data={}, status={"code": 401, "message": "A user with that name exists"})
+
+        
+    elif not user_response:
+
+        hashed_password = generate_password_hash(data['password']).decode('utf8')
+
+        print(data['username'])
+
+        print(data['email'])
+
+        user = mongo.db.users.insert_one({
+            'username': data['username'],
+            'email': data['email'],
+            'password': hashed_password
+            })
+
+
+        print(user.inserted_id)
+        # login_user(create_user)
+        # created_user_response = []
+        
+        
+        # for element in create_user:
+        #     print(element)
+        #     created_user_response.append(element)
+
+        # print(created_user_response, "HERE IS THE CREATED USER RESPONSE")
+
+        return jsonify(data={}, status={'code': 200, "message": "Successfully Registered"})
+
+
+    # except: 
+    #     return jsonify(data={}, status={"code": 401, "message": "Registration failed"})
+
+    
 
 
 # ADD FILE
