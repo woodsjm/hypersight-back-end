@@ -10,15 +10,12 @@ import datetime
 import re
 
 
-
-
-
 DEBUG = True
 PORT = 8000
 
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb://localhost:27017/employees"
+app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
 mongo = PyMongo(app)
 
 app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
@@ -30,16 +27,9 @@ CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
 def login():
     data = request.get_json()
 
-    print(data, "HERE IS THE DATA FROM THE FORM")
-
     login_user = mongo.db.users.find_one({'username': data['username']})
 
     if login_user:
-        hash_entered_pw = generate_password_hash(data['password'])
-
-        print(hash_entered_pw, "HASH OF THE ENTERED PW")
-
-        
 
         if bcrypt.hashpw(data['password'].encode('utf-8'), login_user['password'].encode('utf-8')) == login_user['password'].encode('utf-8'):
             session['username'] = data['username']
@@ -47,11 +37,13 @@ def login():
     
         return jsonify(data={}, status={"code": 401, "message": "Invalid Username/Password"})
 
-# Log user out
-@app.route('/logout', methods=["GET"])
+# LOG USER OUT
+@app.route('/logout', methods=["POST"])
 def logout():
+
+    session.pop('username', None)
   
-  return jsonify(data={}, status={"code": 200, "message": "User logout route hit"})   
+    return jsonify(data={}, status={"code": 200, "message": "User successfully logged out"})   
 
 
 # REGISTER NEW USER
@@ -60,49 +52,37 @@ def register():
 
     data = request.get_json()
 
-
     user_exists = mongo.db.users.find({'username': data['username']})
 
     user_response = []
     for item in user_exists:
         user_response.append(item)
 
-    if user_response:
+    try:
 
-        return jsonify(data={}, status={"code": 401, "message": "A user with that name exists"})
+        if user_response:
 
-        
-    elif not user_response:
+            return jsonify(data={}, status={"code": 401, "message": "A user with that name exists"})
 
-        hashed_password = generate_password_hash(data['password']).decode('utf8')
+            
+        elif not user_response:
 
-        print(data['username'])
+            hashed_password = generate_password_hash(data['password']).decode('utf8')
 
-        print(data['email'])
+            user = mongo.db.users.insert_one({
+                'username': data['username'],
+                'email': data['email'],
+                'password': hashed_password,
+                'files': []
+                })
 
-        user = mongo.db.users.insert_one({
-            'username': data['username'],
-            'email': data['email'],
-            'password': hashed_password
-            })
+            session['username'] = data['username']
 
-
-        print(user.inserted_id)
-        # login_user(create_user)
-        # created_user_response = []
-        
-        
-        # for element in create_user:
-        #     print(element)
-        #     created_user_response.append(element)
-
-        # print(created_user_response, "HERE IS THE CREATED USER RESPONSE")
-
-        return jsonify(data={}, status={'code': 200, "message": "Success"})
+            return jsonify(data={}, status={'code': 200, "message": "Success"})
 
 
-    # except: 
-    #     return jsonify(data={}, status={"code": 401, "message": "Registration failed"})
+    except: 
+        return jsonify(data={}, status={"code": 401, "message": "Registration failed"})
 
     
 
@@ -110,37 +90,33 @@ def register():
 # ADD FILE
 @app.route("/upload", methods=["POST"])
 def upload_csv():
-    print("*******************")
-    print("INSIDE UPLOAD_CSV")
-    
     
     # GET CURRENT DATE AND TIME AS STRING
     date_and_time = str(datetime.datetime.now())
-    print(date_and_time)
-
+    
     # STRIP THE CURRENT DATE AND TIME STRING
     datetime_stripped = re.sub('[-: .]', '', date_and_time)
-    print(datetime_stripped)
-    logged_in_user = "tom" + datetime_stripped
+    
+    the_current_user = session['username']
+
+    logged_in_user = the_current_user + datetime_stripped
     coll = mongo.db.create_collection(logged_in_user)
 
     data = request.get_json()
-    print(data['csvfile'])
-    print(data['filename'])
     result = coll.insert_many(data['csvfile'])
 
     # Dictionary for storing users chosen file name and the name of the collection (i.e. the
     # name of file as it is stored in MongoDB)
     file_name_reference = {data['filename']: logged_in_user}
 
+    the_current_user = session['username']
+
     file_reference = mongo.db.users.update_one({
-        'username': 'tom'
+        'username': the_current_user
         }, {
         '$push': {'files': file_name_reference}
         })
 
-
-    # print([r._id for r in result.inserted_ids])
     resultStr = str(result.inserted_ids)
     
     if (result.inserted_ids != None):
@@ -153,9 +129,11 @@ def prepdata():
     
     result = mongo.db.list_collection_names()
 
+    the_current_user = session['username']
+
     # Grab file name references from users collection
     file_name_references = mongo.db.users.find({
-        'username': 'tom'
+        'username': the_current_user
         }, {'files': 1})
 
     file_name_references_list = []
@@ -169,7 +147,7 @@ def prepdata():
     # Retrieve list of collections belonging to user
     array_of_user_collections = []
     for collection in result:
-        if "tom" in collection:
+        if the_current_user in collection:
             array_of_user_collections.append(collection)
     
     # Construct an individual file by creating a list with all documents from a collection. 
@@ -203,6 +181,8 @@ def prepdata():
 @app.route('/delete/<filename>', methods=["Delete"])
 def delete_file(filename):
 
+    the_current_user = session['username']
+
     # Grab list of all collections
     all_files = mongo.db.list_collection_names()
 
@@ -210,7 +190,7 @@ def delete_file(filename):
 
     # Grab file name references from users collection
     file_name_references = mongo.db.users.find({
-        'username': 'tom'
+        'username': the_current_user
         }, {'files': 1})
 
     # Convert file name references into a list
@@ -233,12 +213,14 @@ def delete_file(filename):
 @app.route('/edit/<filename>', methods=["PUT"])
 def edit_file(filename):
 
+    the_current_user = session['username']
+
     data = request.get_json()
 
     new_filename = data
     
     file_name_references = mongo.db.users.find({
-        'username': 'tom'
+        'username': the_current_user
         }, {'files': 1})
 
     # Grab file name references from users collection
@@ -253,13 +235,13 @@ def edit_file(filename):
             file_reference_value = file_ref[file_ref_key[0]]
 
             delete_file_ref = mongo.db.users.update_one({
-                    'username': 'tom'
+                    'username': the_current_user
                     }, {
                     '$pull': {'files': {file_ref_key[0]: file_reference_value}}
                     })
 
             add_file_ref = mongo.db.users.update_one({
-                    'username': 'tom'
+                    'username': the_current_user
                     }, {
                     '$push': {'files': {new_filename: file_reference_value}}
                     }) 
@@ -267,13 +249,6 @@ def edit_file(filename):
     return jsonify(data='resource successfully updated', status={"code": 200, "message": "Resource updated"})
 
 
-# @app.route("/<username>")
-# def user_profile(username):
-#     user = mongo.db.users.find_one({"username": username})
-#     print(user["username"])
-#     print(user["_id"])
-#     userid = str(user["_id"])
-#     return userid
 
 @app.route('/') 
 def index(): 
