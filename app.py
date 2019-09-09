@@ -22,7 +22,9 @@ app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
 
 CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
 
-# LOG USER IN
+
+
+# ----------------LOG USER IN----------------
 @app.route('/login', methods=["POST"])
 def login():
     data = request.get_json()
@@ -37,7 +39,9 @@ def login():
     
         return jsonify(data={}, status={"code": 401, "message": "Invalid Username/Password"})
 
-# LOG USER OUT
+
+
+# ----------------LOG USER OUT----------------
 @app.route('/logout', methods=["POST"])
 def logout():
 
@@ -46,7 +50,8 @@ def logout():
     return jsonify(data={}, status={"code": 200, "message": "User successfully logged out"})   
 
 
-# REGISTER NEW USER
+
+# ----------------REGISTER NEW USER----------------
 @app.route("/register", methods=["POST"])
 def register():
 
@@ -86,8 +91,7 @@ def register():
 
     
 
-
-# ADD FILE
+# ----------------ADD FILE----------------
 @app.route("/upload", methods=["POST"])
 def upload_csv():
     
@@ -123,7 +127,8 @@ def upload_csv():
         return jsonify(data=resultStr, status={"code": 200, "message": "Success"})
     
 
-# LIST ALL FILES
+
+# ----------------LIST ALL FILES----------------
 @app.route("/prepdata", methods=["GET"])
 def prepdata():
     
@@ -177,7 +182,8 @@ def prepdata():
     return jsonify(data=user_files, status={"code": 200, "message": "Success"})
 
 
-# DELETE FILE
+
+# ----------------DELETE FILE----------------
 @app.route('/delete/<filename>', methods=["Delete"])
 def delete_file(filename):
 
@@ -209,7 +215,8 @@ def delete_file(filename):
     return jsonify(data='resources successfully deleted', status={"code": 200, "message": "Resource deleted"})
 
 
-# UPDATE FILE NAME
+
+# ----------------UPDATE FILE NAME----------------
 @app.route('/edit/<filename>', methods=["PUT"])
 def edit_file(filename):
 
@@ -253,6 +260,7 @@ def edit_file(filename):
 @app.route('/') 
 def index(): 
     return 'SERVER WORKING' 
+
 
 
 if __name__ == '__main__':
