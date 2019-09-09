@@ -11,19 +11,20 @@ import datetime
 import re
 import sys
 
-print(sys.path, "HERE IS THE PATH TO THE INSTALLED PACKAGES")
-
 
 DEBUG = True
 PORT = 8000
 
 
 # ----------------DB SETUP----------------
-app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
-mongo = PyMongo(app)
+MONGO_URL = os.environ.get('MONGO_URL')
+if not MONGO_URL:
+    MONGO_URL = "mongodb://localhost:27017/hypersight"
 
-client = MongoClient(os.environ['MONGODB_URL'])
+app = Flask(__name__)
+# app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
+app.config['MONGO_URI'] = MONGO_URL
+mongo = PyMongo(app)
 
 app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
 
