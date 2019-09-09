@@ -20,9 +20,36 @@ app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/employees"
 mongo = PyMongo(app)
 
-#app.register_blueprint(api)
+
 
 CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
+
+# LOG USER IN
+@app.route('/login', methods=["POST"])
+def login():
+    data = request.get_json()
+
+    print(data, "HERE IS THE DATA FROM THE FORM")
+
+    login_user = mongo.db.users.find_one({'username': data['username']})
+
+    if login_user:
+        hash_entered_pw = generate_password_hash(data['password'])
+
+        print(hash_entered_pw, "HASH OF THE ENTERED PW")
+
+        # if check_password_hash(data['password'].encode('utf-8'), login_user['password'].encode('utf-8')) == login_user['password'].encode('utf-8'):
+        #     session['username'] = data['username']
+        #     return jsonify(data={}, status={"code": 200, "message": "Successfully logged in"})
+    
+        return jsonify(data={}, status={"code": 401, "message": "Invalid Username/Password"})
+
+# Log user out
+@app.route('/logout', methods=["GET"])
+def logout():
+  
+  return jsonify(data={}, status={"code": 200, "message": "User logout route hit"})   
+
 
 # REGISTER NEW USER
 @app.route("/register", methods=["POST"])
@@ -68,7 +95,7 @@ def register():
 
         # print(created_user_response, "HERE IS THE CREATED USER RESPONSE")
 
-        return jsonify(data={}, status={'code': 200, "message": "Successfully Registered"})
+        return jsonify(data={}, status={'code': 200, "message": "Success"})
 
 
     # except: 
@@ -133,6 +160,8 @@ def prepdata():
         file_name_references_list.append(element['files'])
 
     flat_refs_list = [item for sublist in file_name_references_list for item in sublist]
+
+
     
     # Retrieve list of collections belonging to user
     array_of_user_collections = []
