@@ -3,12 +3,15 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS
 from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required 
-from pymongo import Connection
+from pymongo import MongoClient
 import bcrypt
 import json
 import os
 import datetime
 import re
+import sys
+
+print(sys.path, "HERE IS THE PATH TO THE INSTALLED PACKAGES")
 
 
 DEBUG = True
@@ -20,7 +23,7 @@ app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
 mongo = PyMongo(app)
 
-DATABASE = pymongo.Connection(os.environ['MONGODB_URL'])
+client = MongoClient(os.environ['MONGODB_URL'])
 
 app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
 
