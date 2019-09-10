@@ -30,7 +30,7 @@ escaped_password = urllib.parse.quote_plus(password)
 connection_string = os.environ.get('DATABASE_CONNECTION_STRING')
 print(connection_string, "HERE IS THE CONNECTION STRING")
 
-MONGO_URL = 'mongodb://' + escaped_username ':' + escaped_password + connection_string
+MONGO_URL = 'mongodb://' + escaped_username + ':' + escaped_password + connection_string
 # MONGO_URL = os.environ.get('DATABASE_URL')
 print('here is DATABASE_URL')
 print(MONGO_URL)
