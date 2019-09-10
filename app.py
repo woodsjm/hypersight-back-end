@@ -25,14 +25,13 @@ app = Flask(__name__)
 # app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
 app.config['MONGO_URI'] = MONGO_URL
 
-# from cors docs
-app.config['CORS_HEADERS'] = 'Content-Type'
+
 
 mongo = PyMongo(app)
 
 app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
 
-CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'],  supports_credentials=True)
+CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'], headers=['Content-Type'],  supports_credentials=True)
 
 
 
