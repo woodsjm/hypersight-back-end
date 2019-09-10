@@ -81,6 +81,9 @@ def register():
     user_exists = mongo.db.users.find({'username': data['username']})
 
     user_response = []
+    print("--------------------HERE IS THE RESPONSE FROM ATLAS-----------------------")
+    print(user_response)
+    print("--------------------------------------------------------------------------")
     for item in user_exists:
         user_response.append(item)
 
