@@ -52,6 +52,7 @@ CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'],
 
 # ----------------LOG USER IN----------------
 @app.route('/login', methods=["POST"])
+@cross_origin
 def login():
     data = request.get_json()
 
@@ -79,6 +80,7 @@ def logout():
 
 # ----------------REGISTER NEW USER----------------
 @app.route("/register", methods=["POST"])
+@cross_origin
 def register():
 
     data = request.get_json()
@@ -156,6 +158,7 @@ def upload_csv():
 
 # ----------------LIST ALL FILES----------------
 @app.route("/prepdata", methods=["GET"])
+@cross_origin
 def prepdata():
     
     result = mongo.db.list_collection_names()
