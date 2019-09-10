@@ -24,6 +24,10 @@ if not MONGO_URL:
 app = Flask(__name__)
 # app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
 app.config['MONGO_URI'] = MONGO_URL
+
+# from cors docs
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 mongo = PyMongo(app)
 
 app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
