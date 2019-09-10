@@ -95,6 +95,9 @@ def register():
 
             
         elif not user_response:
+            print("--------------------------------------------------------------------------")
+            print("INSIDE THE ELIF BLOCK")
+            print("--------------------------------------------------------------------------")
 
             hashed_password = generate_password_hash(data['password']).decode('utf8')
 
