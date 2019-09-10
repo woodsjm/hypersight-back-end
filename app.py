@@ -10,6 +10,7 @@ import os
 import datetime
 import re
 import sys
+import urllib.parse
 
 
 
@@ -18,13 +19,29 @@ PORT = 8000
 
 
 # ----------------DB SETUP----------------
-MONGO_URL = os.environ.get('DATABASE_URL')
+username = os.environ.get('DATABASE_USERNAME')
+print(username, "HERE IS THE USERNAME")
+password = os.environ.get('DATABASE_PASSWORD')
+print(password, "HERE IS THE PASSWORD")
+
+escaped_username = urllib.parse.quote_plus(username)
+escaped_password = urllib.parse.quote_plus(password)
+
+connection_string = os.environ.get('DATABASE_CONNECTION_STRING')
+print(connection_string, "HERE IS THE CONNECTION STRING")
+
+MONGO_URL = 'mongodb://' + escaped_username ':' + escaped_password + connection_string
+# MONGO_URL = os.environ.get('DATABASE_URL')
 print('here is DATABASE_URL')
 print(MONGO_URL)
 
-print('here is os.environ')
+# mongodb://jordan.woods@nlaw.northwestern.edu:Backyard7!@cluster0-shard-00-00-2zbpy.mongodb.net:27017,cluster0-shard-00-01-2zbpy.mongodb.net:27017,cluster0-shard-00-02-2zbpy.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority
 
-print(os.environ)
+
+
+# print('here is os.environ')
+
+# print(os.environ)
 
 if not MONGO_URL:
     MONGO_URL = "mongodb://localhost:27017/hypersight"
