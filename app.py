@@ -19,6 +19,9 @@ PORT = 8000
 
 # ----------------DB SETUP----------------
 MONGO_URL = os.environ.get('MONGO_URL')
+print(MONGO_URL)
+print(os.environ)
+
 if not MONGO_URL:
     MONGO_URL = "mongodb://localhost:27017/hypersight"
 
@@ -272,8 +275,9 @@ def index():
     return 'SERVER WORKING' 
 
 if 'ON_HEROKU' in os.environ:
-
     print('hitting ')
+
+
 
 if __name__ == '__main__':
     
