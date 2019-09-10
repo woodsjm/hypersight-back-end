@@ -10,7 +10,7 @@ import os
 import datetime
 import re
 import sys
-import logging
+
 
 
 DEBUG = True
@@ -23,33 +23,14 @@ if not MONGO_URL:
     MONGO_URL = "mongodb://localhost:27017/hypersight"
 
 app = Flask(__name__)
-# app.config["MONGO_URI"] = "mongodb://localhost:27017/hypersight"
+
 app.config['MONGO_URI'] = MONGO_URL
-
-
 
 mongo = PyMongo(app)
 
 app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
 
 CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'], supports_credentials=True)
-
-# # ----------------RETURN APPROPRIATE HEADERS ON EVERY REQUEST TO SERVER----------------
-# @app.after_request
-# def add_cors(resp):
-    
-#     resp.headers['Access-Control-Allow-Origin'] = flask.request.headers.get('Origin','*')
-#     resp.headers['Access-Control-Allow-Credentials'] = 'true'
-#     resp.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS, GET'
-#     resp.headers['Access-Control-Allow-Headers'] = flask.request.headers.get( 
-#         'Access-Control-Request-Headers', 'Authorization' )
-    
-#     if app.debug:
-#         resp.headers['Access-Control-Max-Age'] = '1'
-
-#     return resp
-
-logging.getLogger('flask_cors').level = logging.DEBUG
 
 
 
