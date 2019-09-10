@@ -10,6 +10,7 @@ import os
 import datetime
 import re
 import sys
+import logging
 
 
 DEBUG = True
