@@ -81,9 +81,7 @@ def register():
     user_exists = mongo.db.users.find({'username': data['username']})
 
     user_response = []
-    print("--------------------HERE IS THE RESPONSE FROM ATLAS-----------------------")
-    print(user_response)
-    print("--------------------------------------------------------------------------")
+    
     for item in user_exists:
         user_response.append(item)
 
@@ -95,10 +93,7 @@ def register():
 
             
         elif not user_response:
-            print("--------------------------------------------------------------------------")
-            print("INSIDE THE ELIF BLOCK")
-            print("--------------------------------------------------------------------------")
-
+            
             hashed_password = generate_password_hash(data['password']).decode('utf8')
 
             user = mongo.db.users.insert_one({
