@@ -18,8 +18,12 @@ PORT = 8000
 
 
 # ----------------DB SETUP----------------
-MONGO_URL = os.environ.get('MONGO_URL')
+MONGO_URL = os.environ.get('DATABASE_URL')
+print('here is DATABASE_URL')
 print(MONGO_URL)
+
+print('here is os.environ')
+
 print(os.environ)
 
 if not MONGO_URL:
