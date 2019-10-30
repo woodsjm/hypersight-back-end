@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required 
 from pymongo import MongoClient
+
 import bcrypt
 import json
 import os
@@ -13,36 +14,36 @@ import sys
 import urllib.parse
 
 
-
 DEBUG = True
 PORT = 8000
 
 
 # ----------------DB SETUP----------------
+
+# Heroku Credentials
 username = os.environ.get('DATABASE_USERNAME')
 password = os.environ.get('DATABASE_PASSWORD')
 
-escaped_username = urllib.parse.quote_plus(username)
-escaped_password = urllib.parse.quote_plus(password)
-
-connection_string = os.environ.get('DATABASE_CONNECTION_STRING')
-
-MONGO_URL = 'mongodb://' + escaped_username + ':' + escaped_password + connection_string
-mongo = MongoClient(MONGO_URL)
-if not MONGO_URL:
-    mongo = PyMongo(app)
-    MONGO_URL = "mongodb://localhost:27017/hypersight"
-
 app = Flask(__name__)
 
-app.config['MONGO_URI'] = MONGO_URL
+if not username and not password:
+    # Local Settings
+    MONGO_URL = "mongodb://localhost:27017/hypersight"
+    app.config['MONGO_URI'] = MONGO_URL
+    mongo = PyMongo(app)
+else:
+    # Heroku Settings
+    escaped_username = urllib.parse.quote_plus(username)
+    escaped_password = urllib.parse.quote_plus(password)
 
-# mongo = PyMongo(app)
+    connection_string = os.environ.get('DATABASE_CONNECTION_STRING')
 
-app.secret_key = 'RLAKJDRANDOMASDFLKENCASDFWERACSVNASDFLKJQWEFASDF STRING'
+    MONGO_URL = 'mongodb://' + escaped_username + ':' + escaped_password + connection_string
+    mongo = MongoClient(MONGO_URL)
+
+app.secret_key = 'RLAKJDRANDOM STRING'
 
 CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'], supports_credentials=True)
-
 
 
 # ----------------LOG USER IN----------------
@@ -117,10 +118,9 @@ def register():
 @app.route("/upload", methods=["POST"])
 def upload_csv():
     
-    # GET CURRENT DATE AND TIME AS STRING
     date_and_time = str(datetime.datetime.now())
-    
-    # STRIP THE CURRENT DATE AND TIME STRING
+
+    # Dyanmic string for naming each collection (i.e. CSV file)
     datetime_stripped = re.sub('[-: .]', '', date_and_time)
     
     the_current_user = session['username']
@@ -131,7 +131,7 @@ def upload_csv():
     data = request.get_json()
     result = coll.insert_many(data['csvfile'])
 
-    # Dictionary for storing users chosen file name and the name of the collection (i.e. the
+    # Store users chosen file name and the name of the collection (i.e. the
     # name of file as it is stored in MongoDB)
     file_name_reference = {data['filename']: logged_in_user}
 
@@ -158,7 +158,7 @@ def prepdata():
 
     the_current_user = session['username']
 
-    # Grab file name references from users collection
+    # Grab file name references for the user
     file_name_references = mongo.db.users.find({
         'username': the_current_user
         }, {'files': 1})
@@ -169,17 +169,16 @@ def prepdata():
 
     flat_refs_list = [item for sublist in file_name_references_list for item in sublist]
 
-
-    
-    # Retrieve list of collections belonging to user
+    # Retrieve collections (i.e. CSV files) belonging to user
     array_of_user_collections = []
     for collection in result:
         if the_current_user in collection:
             array_of_user_collections.append(collection)
     
-    # Construct an individual file by creating a list with all documents from a collection. 
-    # Then create a list of such files, making each individual file the value of a key - in a dictionary -
-    # whose name is linked to the collection name. 
+    # Construct an individual file (i.e. an individual CSV file) by creating 
+    # a list with all documents from a collection. 
+    # Then create a list of such files, making each individual file the value of a key
+    # (whose name is linked to the collection name). 
     user_files = []
     for collection in array_of_user_collections:
 
@@ -211,17 +210,14 @@ def delete_file(filename):
 
     the_current_user = session['username']
 
-    # Grab list of all collections
     all_files = mongo.db.list_collection_names()
 
     file_to_delete = filename
 
-    # Grab file name references from users collection
     file_name_references = mongo.db.users.find({
         'username': the_current_user
         }, {'files': 1})
 
-    # Convert file name references into a list
     file_name_references_list = []
     for element in file_name_references:
         file_name_references_list.append(element['files'])
@@ -252,7 +248,6 @@ def edit_file(filename):
         'username': the_current_user
         }, {'files': 1})
 
-    # Grab file name references from users collection
     file_name_references_list = []
     for element in file_name_references:
         file_name_references_list.append(element['files'])
