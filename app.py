@@ -17,6 +17,10 @@ import urllib.parse
 DEBUG = True
 PORT = 8000
 
+cwd = os.getcwd()
+dir_path = os.path.dirname(os.path.realpath(__file__))
+print("Current Working Directory", cwd)
+print("Full Directory", dir_path)
 
 # ----------------DB SETUP----------------
 
@@ -60,7 +64,6 @@ def make_file_name_references_list(file_refs):
     for element in file_refs:
         file_name_references_list.append(element['files'])
     return file_name_references_list
-
 
 
 # ----------------LOG USER IN----------------
@@ -137,12 +140,12 @@ def upload_csv():
     
     date_and_time = str(datetime.datetime.now())
 
-    # Dyanmic string for naming each collection (i.e. CSV file)
+    # Dynamic string for naming each collection (i.e. CSV file)
     datetime_stripped = re.sub('[-: .]', '', date_and_time)
     
-    the_current_user = session['username']
+    current_user = session['username']
 
-    logged_in_user = the_current_user + datetime_stripped
+    logged_in_user = current_user + datetime_stripped
     coll = mongo.db.create_collection(logged_in_user)
 
     data = request.get_json()
@@ -152,10 +155,8 @@ def upload_csv():
     # name of file as it is stored in MongoDB)
     file_name_reference = {data['filename']: logged_in_user}
 
-    the_current_user = session['username']
-
     file_reference = mongo.db.users.update_one({
-        'username': the_current_user
+        'username': current_user
         }, {
         '$push': {'files': file_name_reference}
         })
@@ -173,23 +174,16 @@ def prepdata():
     
     result = mongo.db.list_collection_names()
 
-    the_current_user = session['username']
+    current_user = session['username']
 
-    # Grab file name references for the user
-    file_name_references = mongo.db.users.find({
-        'username': the_current_user
-        }, {'files': 1})
+    helper_function = make_file_name_references_list(get_file_name_references(current_user))
 
-    file_name_references_list = []
-    for element in file_name_references:
-        file_name_references_list.append(element['files'])
-
-    flat_refs_list = [item for sublist in file_name_references_list for item in sublist]
+    flat_refs_list = [item for sublist in helper_function for item in sublist]
 
     # Retrieve collections (i.e. CSV files) belonging to user
     array_of_user_collections = []
     for collection in result:
-        if the_current_user in collection:
+        if current_user in collection:
             array_of_user_collections.append(collection)
     
     # Construct an individual file (i.e. an individual CSV file) by creating 
@@ -225,22 +219,15 @@ def prepdata():
 @app.route('/delete/<filename>', methods=["Delete"])
 def delete_file(filename):
 
-    the_current_user = session['username']
+    current_user = session['username']
 
     all_files = mongo.db.list_collection_names()
 
     file_to_delete = filename
 
-    file_name_references = mongo.db.users.find({
-        'username': the_current_user
-        }, {'files': 1})
+    helper_function = make_file_name_references_list(get_file_name_references(current_user))
 
-    file_name_references_list = []
-    for element in file_name_references:
-        file_name_references_list.append(element['files'])
-
-    # Find the name of the collection matching the given file name
-    for file_name in file_name_references_list[0]:
+    for file_name in helper_function[0]:
         file_reference = [*file_name]
         if file_to_delete == file_reference[0]:
             # The collection that will be deleted
@@ -255,34 +242,36 @@ def delete_file(filename):
 @app.route('/edit/<filename>', methods=["PUT"])
 def edit_file(filename):
 
-    the_current_user = session['username']
+    current_user = session['username']
 
     data = request.get_json()
 
     new_filename = data
     
-    file_name_references = mongo.db.users.find({
-        'username': the_current_user
-        }, {'files': 1})
+    # file_name_references = mongo.db.users.find({
+    #     'username': the_current_user
+    #     }, {'files': 1})
 
-    file_name_references_list = []
-    for element in file_name_references:
-        file_name_references_list.append(element['files'])
+    # file_name_references_list = []
+    # for element in file_name_references:
+    #     file_name_references_list.append(element['files'])
 
-    for file_ref in file_name_references_list[0]:
+    helper_function = make_file_name_references_list(get_file_name_references(current_user))
+
+    for file_ref in helper_function[0]:
         file_ref_key = [*file_ref]
         if filename == file_ref_key[0]:
 
             file_reference_value = file_ref[file_ref_key[0]]
 
             delete_file_ref = mongo.db.users.update_one({
-                    'username': the_current_user
+                    'username': current_user
                     }, {
                     '$pull': {'files': {file_ref_key[0]: file_reference_value}}
                     })
 
             add_file_ref = mongo.db.users.update_one({
-                    'username': the_current_user
+                    'username': current_user
                     }, {
                     '$push': {'files': {new_filename: file_reference_value}}
                     }) 
