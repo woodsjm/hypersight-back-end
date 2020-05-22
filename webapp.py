@@ -20,9 +20,9 @@ app = Flask(__name__)
 
 app.secret_key = 'RLAKJDRANDOM STRING'
 
-CORS(api, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'], supports_credentials=True)
-CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'], supports_credentials=True)
-CORS(user, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com'], supports_credentials=True)
+CORS(api, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com', 'https://tender-haibt-db0bdb.netlify.app/'], supports_credentials=True)
+CORS(app, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com', 'https://tender-haibt-db0bdb.netlify.app/'], supports_credentials=True)
+CORS(user, origins=['http://localhost:3000', 'https://hypersight.herokuapp.com', 'https://tender-haibt-db0bdb.netlify.app/'], supports_credentials=True)
 
 app.register_blueprint(api)
 app.register_blueprint(user)
